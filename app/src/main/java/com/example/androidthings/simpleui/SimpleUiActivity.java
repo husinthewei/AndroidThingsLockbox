@@ -23,7 +23,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.TableLayout;
 import android.widget.Switch;
+import android.widget.Button;
+import android.widget.TableRow;
 
 import com.google.android.things.pio.Gpio;
 import com.google.android.things.pio.PeripheralManager;
@@ -43,18 +46,10 @@ public class SimpleUiActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        LinearLayout gpioPinsView = findViewById(R.id.gpio_list);
         LayoutInflater inflater = getLayoutInflater();
         PeripheralManager pioManager = PeripheralManager.getInstance();
 
-        for (String name : pioManager.getGpioList()) {
-            View child = inflater.inflate(R
-                    .layout.list_item_gpio, gpioPinsView, false);
-            Switch button = child.findViewById(R.id.gpio_switch);
-            button.setText(name);
-            gpioPinsView.addView(button);
-            Log.d(TAG, "Added button for GPIO: " + name);
-
+        /*
             try {
                 final Gpio ledPin = pioManager.openGpio(name);
                 ledPin.setEdgeTriggerType(Gpio.EDGE_NONE);
@@ -82,7 +77,7 @@ public class SimpleUiActivity extends Activity {
                 // disable button
                 button.setEnabled(false);
             }
-        }
+        */
     }
 
     @Override

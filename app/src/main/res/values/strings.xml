@@ -15,4 +15,5 @@
   -->
 <resources>
     <string name="app_name">Simple UI</string>
+    <string name="button">Button</string>
 </resources>

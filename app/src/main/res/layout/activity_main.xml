@@ -23,28 +23,105 @@
     android:orientation="horizontal"
     tools:context=".SimpleUiActivity">
 
-    <ImageView
-        android:id="@+id/pinout_board"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:layout_width="0px"
+        android:layout_height="0px"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:src="@drawable/pinout_board_vert"
-        tools:ignore="ContentDescription" />
+        android:orientation="horizontal">
 
-    <ScrollView
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:fadeScrollbars="false"
-        android:padding="8dp"
-        android:scrollbarStyle="outsideOverlay"
-        tools:layout_width="96dp">
+        <Space
+            android:layout_width="133dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
-        <LinearLayout
-            android:id="@+id/gpio_list"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-    </ScrollView>
+        <TableLayout
+            android:layout_width="161dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <TextView
+                    android:id="@+id/textView4"
+                    android:layout_width="33dp"
+                    android:layout_height="wrap_content"
+                    android:text="Passcode"
+                    android:textAppearance="@android:style/TextAppearance.Material.Large" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <EditText
+                    android:id="@+id/editText2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="4"
+                    android:inputType="numberPassword"
+                    android:imeOptions="actionDone" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="120dp" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="33dp"
+                    android:layout_height="wrap_content"
+                    android:text="Date Lock"
+                    android:textAppearance="@android:style/TextAppearance.Material.Large" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <EditText
+                    android:id="@+id/editText3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:inputType="date"
+                    android:imeOptions="actionDone"/>
+            </TableRow>
+
+            <TableRow
+                android:layout_width="318dp"
+                android:layout_height="302dp"/>
+        </TableLayout>
+
+        <Space
+            android:layout_width="15dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+    </LinearLayout>
 
 </LinearLayout>
