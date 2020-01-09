@@ -71,7 +71,7 @@
                 android:layout_height="match_parent" >
 
                 <EditText
-                    android:id="@+id/editText2"
+                    android:id="@+id/passcodeInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="4"
@@ -105,14 +105,13 @@
                 android:layout_height="match_parent">
 
                 <EditText
-                    android:id="@+id/editText3"
+                    android:id="@+id/dateInput"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:inputType="date"
                     android:imeOptions="actionDone"/>
             </TableRow>
-
             <TableRow
                 android:layout_width="318dp"
                 android:layout_height="302dp"/>

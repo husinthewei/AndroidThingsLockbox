@@ -17,16 +17,22 @@
 package com.example.androidthings.simpleui;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.Switch;
 import android.widget.Button;
 import android.widget.TableRow;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.android.things.pio.Gpio;
 import com.google.android.things.pio.PeripheralManager;
@@ -41,6 +47,17 @@ public class SimpleUiActivity extends Activity {
 
     private Map<String, Gpio> mGpioMap = new LinkedHashMap<>();
 
+    private void removeFocus(EditText e, TextView v) {
+        e.getText().clear();
+        e.setFocusableInTouchMode(false);
+        e.setFocusable(false);
+        e.setFocusableInTouchMode(true);
+        e.setFocusable(true);
+        InputMethodManager imm =
+                (InputMethodManager)v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +65,36 @@ public class SimpleUiActivity extends Activity {
 
         LayoutInflater inflater = getLayoutInflater();
         PeripheralManager pioManager = PeripheralManager.getInstance();
+
+        // Set action on entered passcode
+        final EditText passcodeInput = findViewById(R.id.passcodeInput);
+        passcodeInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    Log.i(TAG, "Entered " + passcodeInput.getText().toString());
+                    handled = true;
+                    removeFocus(passcodeInput, v);
+                }
+                return handled;
+            }
+        });
+
+        // Action on entered date
+        final EditText dateInput = findViewById(R.id.dateInput);
+        dateInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    Log.i(TAG, "Entered " + dateInput.getText().toString());
+                    handled = true;
+                    removeFocus(dateInput, v);
+                }
+                return handled;
+            }
+        });
 
         /*
             try {
