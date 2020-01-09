@@ -38,6 +38,9 @@ import com.google.android.things.pio.Gpio;
 import com.google.android.things.pio.PeripheralManager;
 
 import java.io.IOException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -46,6 +49,8 @@ public class SimpleUiActivity extends Activity {
     private static final String TAG = SimpleUiActivity.class.getSimpleName();
 
     private Map<String, Gpio> mGpioMap = new LinkedHashMap<>();
+
+    private final String DATE_FILE = "test.txt";
 
     private void removeFocus(EditText e, TextView v) {
         e.getText().clear();
@@ -56,6 +61,43 @@ public class SimpleUiActivity extends Activity {
         InputMethodManager imm =
                 (InputMethodManager)v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+    }
+
+    private void addNewDate(String text) {
+        Context context = this;
+        File path = context.getFilesDir();
+        File file = new File(path, DATE_FILE);
+        try {
+            FileOutputStream stream = new FileOutputStream(file);
+            stream.write(text.getBytes());
+            stream.close();
+        } catch (Exception e) {
+            Log.e(TAG, "File error: ", e);
+        }
+    }
+
+    private String getDate() {
+        Context context = this;
+        File path = context.getFilesDir();
+        File file = new File(path, DATE_FILE);
+
+        int length = (int) file.length();
+        byte[] bytes = new byte[length];
+
+
+        try {
+            FileInputStream in = new FileInputStream(file);
+            in.read(bytes);
+            in.close();
+        } catch (Exception e) {
+            Log.e(TAG, "File error: ", e);
+        }
+
+        String contents = new String(bytes);
+
+        Log.i(TAG, "contents: " + contents);
+
+        return contents;
     }
 
     @Override
@@ -95,6 +137,9 @@ public class SimpleUiActivity extends Activity {
                 return handled;
             }
         });
+
+        // addNewDate("A rangerange57 test");
+        getDate();
 
         /*
             try {
