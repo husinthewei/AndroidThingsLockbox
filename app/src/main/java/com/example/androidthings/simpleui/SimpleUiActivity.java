@@ -19,7 +19,9 @@ package com.example.androidthings.simpleui;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.KeyEvent;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,8 +37,8 @@ import android.widget.TableRow;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.android.things.pio.Gpio;
 import com.google.android.things.pio.PeripheralManager;
+import com.google.android.things.contrib.driver.pwmservo.Servo;
 
 import java.io.IOException;
 import java.io.File;
@@ -49,13 +51,100 @@ public class SimpleUiActivity extends Activity {
 
     private static final String TAG = SimpleUiActivity.class.getSimpleName();
 
-    private Map<String, Gpio> mGpioMap = new LinkedHashMap<>();
-
     private final String DATE_FILE = "test.txt";
     private final String PASSCODE_FILE = "pass.txt";
 
     private String passcode;
 
+    private static final String lockServoPin = "PWM1";
+    private Servo lockServo = null;
+
+    // Close servo object
+    private void closeServo() {
+        if (lockServo != null) {
+            try {
+                lockServo.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Could not close lock servo", e);
+            } finally {
+                lockServo = null;
+            }
+        }
+    }
+
+    // Disable servo after 0.75 seconds
+    private void disableServo() {
+        if (lockServo == null) {
+            return;
+        }
+
+        // Wait 0.75 seconds
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    lockServo.setEnabled(false);
+                    closeServo();
+                } catch (IOException e) {
+                    Log.e(TAG, "Could not disable/enable lock servo", e);
+                }
+            }
+        }, 750);
+    }
+
+
+
+    // Move servo to `angle` degrees and enable or disable servo
+    private void moveServo(int angle) {
+        if (lockServo == null) {
+            return;
+        }
+        try {
+            lockServo.setAngle(angle);
+        } catch (IOException e) {
+            Log.e(TAG, "Could not set angle on lock servo", e);
+        }
+    }
+
+    // Initialize and replace servo object if exists
+    private void initializeServo() {
+        if (lockServo != null) {
+            return;
+        }
+        try {
+            lockServo = new Servo(lockServoPin);
+            lockServo.setPulseDurationRange(0.5, 2.4); // according to your servo's specifications
+            lockServo.setAngleRange(0, 180);       // according to your servo's specifications
+            lockServo.setEnabled(true);
+        } catch (IOException e) {
+            Log.e(TAG, "Could not open lock servo", e);
+            lockServo = null;
+        }
+    }
+
+    // Close the lock and hide lock button
+    private void lockTheBox() {
+        initializeServo();
+        moveServo(0);
+        disableServo();
+
+        // Hide lock button
+        Button lockButton = findViewById(R.id.lockButton);
+        lockButton.setVisibility(View.GONE);
+    }
+
+    // Unlock the box and add lock button
+    private void unlockTheBox() {
+        initializeServo();
+        moveServo(180);
+
+        // Show lock button
+        Button lockButton = findViewById(R.id.lockButton);
+        lockButton.setVisibility(View.VISIBLE);
+    }
+
+    // Remove an EditText from focus
     private void removeFocus(EditText e, TextView v) {
         e.getText().clear();
         e.setFocusableInTouchMode(false);
@@ -67,6 +156,7 @@ public class SimpleUiActivity extends Activity {
         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
     }
 
+    // Write text to file at filepath
     private void writeToFile(String filepath, String text) {
         Context context = this;
         File path = context.getFilesDir();
@@ -80,6 +170,7 @@ public class SimpleUiActivity extends Activity {
         }
     }
 
+    // Returns contents of file at filepath
     private String readFromFile(String filepath) {
         Context context = this;
         File path = context.getFilesDir();
@@ -104,18 +195,22 @@ public class SimpleUiActivity extends Activity {
         return contents;
     }
 
+    // Set the password in the password file
     private void createPasscode(String pass) {
         writeToFile(PASSCODE_FILE, pass);
     }
 
+    // Get current passcode in string format
     private String getPasscode() {
         return readFromFile(PASSCODE_FILE);
     }
 
+    // Set a date to lock
     private void addLockDate(String date) {
         writeToFile(DATE_FILE, date);
     }
 
+    // Check and return the current date in the lockdate file
     private String readLockDate(String date) {
         return readFromFile(date);
     }
@@ -130,6 +225,7 @@ public class SimpleUiActivity extends Activity {
 
         // Set action on entered passcode
         final EditText passcodeInput = findViewById(R.id.passcodeInput);
+        final TextView passStatusText = findViewById(R.id.passStatus);
         passcodeInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -137,10 +233,10 @@ public class SimpleUiActivity extends Activity {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     String entered = passcodeInput.getText().toString();
 
-                    final TextView passStatusText = findViewById(R.id.passStatus);
                     if (entered.equals(passcode)) {
                         passStatusText.setText("Go wild dawhg");
                         passStatusText.setTextColor(Color.GREEN);
+                        unlockTheBox();
                     } else {
                         passStatusText.setText("Try again");
                         passStatusText.setTextColor(Color.RED);
@@ -168,51 +264,26 @@ public class SimpleUiActivity extends Activity {
             }
         });
 
+        // Action on lock button press
+        Button lockButton = findViewById(R.id.lockButton);
+        lockButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                passStatusText.setText("");
+                lockTheBox();
+            }
+        });
+
         // Get passcode from file
         passcode = getPasscode();
 
-        /*
-            try {
-                final Gpio ledPin = pioManager.openGpio(name);
-                ledPin.setEdgeTriggerType(Gpio.EDGE_NONE);
-                ledPin.setActiveType(Gpio.ACTIVE_HIGH);
-                ledPin.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
-
-                button.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        try {
-                            ledPin.setValue(isChecked);
-                        } catch (IOException e) {
-                            Log.e(TAG, "error toggling gpio:", e);
-                            buttonView.setOnCheckedChangeListener(null);
-                            // reset button to previous state.
-                            buttonView.setChecked(!isChecked);
-                            buttonView.setOnCheckedChangeListener(this);
-                        }
-                    }
-                });
-
-                mGpioMap.put(name, ledPin);
-            } catch (IOException e) {
-                Log.e(TAG, "Error initializing GPIO: " + name, e);
-                // disable button
-                button.setEnabled(false);
-            }
-        */
+        // Lock the box by default
+        lockTheBox();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        for (Map.Entry<String, Gpio> entry : mGpioMap.entrySet()) {
-            try {
-                entry.getValue().close();
-            } catch (IOException e) {
-                Log.e(TAG, "Error closing GPIO " + entry.getKey(), e);
-            }
-        }
-        mGpioMap.clear();
+        closeServo();
     }
 }
