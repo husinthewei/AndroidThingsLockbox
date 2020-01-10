@@ -86,6 +86,7 @@
                 <Space
                     android:layout_width="wrap_content"
                     android:layout_height="120dp" />
+
             </TableRow>
 
             <TableRow
@@ -112,9 +113,41 @@
                     android:inputType="date"
                     android:imeOptions="actionDone"/>
             </TableRow>
+
             <TableRow
-                android:layout_width="318dp"
-                android:layout_height="302dp"/>
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/passStatus"
+                        android:layout_width="86dp"
+                        android:layout_height="wrap_content"
+                        android:textColor="#B11616"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/lockButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Lock door" />
+                </LinearLayout>
+
+            </TableRow>
         </TableLayout>
 
         <Space

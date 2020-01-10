@@ -18,6 +18,7 @@ package com.example.androidthings.simpleui;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.util.Log;
@@ -51,6 +52,9 @@ public class SimpleUiActivity extends Activity {
     private Map<String, Gpio> mGpioMap = new LinkedHashMap<>();
 
     private final String DATE_FILE = "test.txt";
+    private final String PASSCODE_FILE = "pass.txt";
+
+    private String passcode;
 
     private void removeFocus(EditText e, TextView v) {
         e.getText().clear();
@@ -63,10 +67,10 @@ public class SimpleUiActivity extends Activity {
         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
     }
 
-    private void addNewDate(String text) {
+    private void writeToFile(String filepath, String text) {
         Context context = this;
         File path = context.getFilesDir();
-        File file = new File(path, DATE_FILE);
+        File file = new File(path, filepath);
         try {
             FileOutputStream stream = new FileOutputStream(file);
             stream.write(text.getBytes());
@@ -76,10 +80,10 @@ public class SimpleUiActivity extends Activity {
         }
     }
 
-    private String getDate() {
+    private String readFromFile(String filepath) {
         Context context = this;
         File path = context.getFilesDir();
-        File file = new File(path, DATE_FILE);
+        File file = new File(path, filepath);
 
         int length = (int) file.length();
         byte[] bytes = new byte[length];
@@ -100,6 +104,22 @@ public class SimpleUiActivity extends Activity {
         return contents;
     }
 
+    private void createPasscode(String pass) {
+        writeToFile(PASSCODE_FILE, pass);
+    }
+
+    private String getPasscode() {
+        return readFromFile(PASSCODE_FILE);
+    }
+
+    private void addLockDate(String date) {
+        writeToFile(DATE_FILE, date);
+    }
+
+    private String readLockDate(String date) {
+        return readFromFile(date);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,7 +135,17 @@ public class SimpleUiActivity extends Activity {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 boolean handled = false;
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    Log.i(TAG, "Entered " + passcodeInput.getText().toString());
+                    String entered = passcodeInput.getText().toString();
+
+                    final TextView passStatusText = findViewById(R.id.passStatus);
+                    if (entered.equals(passcode)) {
+                        passStatusText.setText("Go wild dawhg");
+                        passStatusText.setTextColor(Color.GREEN);
+                    } else {
+                        passStatusText.setText("Try again");
+                        passStatusText.setTextColor(Color.RED);
+                    }
+
                     handled = true;
                     removeFocus(passcodeInput, v);
                 }
@@ -138,8 +168,8 @@ public class SimpleUiActivity extends Activity {
             }
         });
 
-        // addNewDate("A rangerange57 test");
-        getDate();
+        // Get passcode from file
+        passcode = getPasscode();
 
         /*
             try {
