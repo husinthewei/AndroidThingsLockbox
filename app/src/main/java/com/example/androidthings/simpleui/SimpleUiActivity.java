@@ -137,7 +137,7 @@ public class SimpleUiActivity extends Activity {
     // Unlock the box and add lock button
     private void unlockTheBox() {
         initializeServo();
-        moveServo(180);
+        moveServo(180 );
 
         // Show lock button
         Button lockButton = findViewById(R.id.lockButton);
