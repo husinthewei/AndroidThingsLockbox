@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.util.Calendar;
+import java.util.TimeZone;
 
 public class SimpleUiActivity extends Activity {
 
@@ -165,7 +166,7 @@ public class SimpleUiActivity extends Activity {
         File path = context.getFilesDir();
         File file = new File(path, filepath);
         try {
-            FileOutputStream stream = new FileOutputStream(file);
+            FileOutputStream stream = new FileOutputStream(file, false);
             stream.write(text.getBytes());
             stream.close();
         } catch (Exception e) {
@@ -192,20 +193,18 @@ public class SimpleUiActivity extends Activity {
         }
 
         String contents = new String(bytes);
-
-        Log.i(TAG, "contents: " + contents);
-
         return contents;
     }
 
+    // Open a dialog for a date picker, which goes to timePicker on pick
     private void datePicker(){
-
         int currYear;
         int currMonth;
         int currDay;
 
         // Get Current Date
         final Calendar c = Calendar.getInstance();
+        c.setTimeZone((TimeZone.getTimeZone("EST")));
         currYear = c.get(Calendar.YEAR);
         currMonth = c.get(Calendar.MONTH);
         currDay = c.get(Calendar.DAY_OF_MONTH);
@@ -214,20 +213,20 @@ public class SimpleUiActivity extends Activity {
                 new DatePickerDialog.OnDateSetListener() {
 
                     @Override
-                    public void onDateSet(DatePicker view, int year,int monthOfYear, int dayOfMonth) {
-                        String date_time = "";
-                        date_time = dayOfMonth + "-" + (monthOfYear + 1) + "-" + year;
-                        tiemPicker();
+                    public void onDateSet(DatePicker view, int year,int month, int day) {
+                        timePicker(year, month, day);
                     }
                 }, currYear, currMonth, currDay);
         datePickerDialog.show();
     }
 
-    private void tiemPicker(){
+    // Open a dialog for a time picker
+    private void timePicker(final int year, final int month, final int day){
         // Get Current Time
         int currHour;
         int currMinute;
         final Calendar c = Calendar.getInstance();
+        c.setTimeZone((TimeZone.getTimeZone("EST")));
         currHour = c.get(Calendar.HOUR_OF_DAY);
         currMinute = c.get(Calendar.MINUTE);
 
@@ -236,10 +235,12 @@ public class SimpleUiActivity extends Activity {
                 new TimePickerDialog.OnTimeSetListener() {
 
                     @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay,int minute) {
-
-                        int selectHour = hourOfDay;
-                        int selectMinute = minute;
+                    public void onTimeSet(TimePicker view, int hour,int minute) {
+                        // Store date in format: year month day hour minute
+                        String date = "" + year + " " + month + " " +
+                                        day + " " + hour + " " + minute;
+                        setLockDate(date);
+                        modifyDisplayDependingOnDateSet();
                     }
                 }, currHour, currMinute, false);
         timePickerDialog.show();
@@ -255,14 +256,69 @@ public class SimpleUiActivity extends Activity {
         return readFromFile(PASSCODE_FILE);
     }
 
-    // Set a date to lock
-    private void addLockDate(String date) {
+    // Set a date to lock until
+    private void setLockDate(String date) {
         writeToFile(DATE_FILE, date);
     }
 
     // Check and return the current date in the lockdate file
-    private String readLockDate(String date) {
-        return readFromFile(date);
+    private String readLockDate() {
+        return readFromFile(DATE_FILE);
+    }
+
+    // Show/hide lock date button and current lock date label depending on if a lock date is set
+    private void modifyDisplayDependingOnDateSet() {
+        String date = readLockDate();
+
+        Button setDateButton = findViewById(R.id.dateButton);
+        TextView currDateLabel = findViewById(R.id.currentDate);
+        if (date.length() > 0) {
+            String[] dateParts = date.split(" ");
+            String year = dateParts[0];
+            String mon= "" + (Integer.parseInt(dateParts[1]) + 1);
+            String day = dateParts[2];
+            String hour = dateParts[3];
+            String min = dateParts[4];
+            String formattedDate = mon + "/" + day + "/" + year + " " + hour + ":" + min;
+
+            // Update UI
+            setDateButton.setVisibility(View.INVISIBLE);
+            currDateLabel.setText("Locked until: " + formattedDate);
+        } else {
+            setDateButton.setVisibility(View.VISIBLE);
+            currDateLabel.setText("");
+        }
+    }
+
+    // Returns true iff current date is past the stored lock date
+    public boolean lockDatePassed() {
+        String lockDate = readLockDate();
+        String[] lockDateParts = lockDate.split(" ");
+
+        if (lockDate.length() == 0) {
+            return true;
+        }
+
+        // Store current date in array for comparison
+        final Calendar c = Calendar.getInstance();
+        c.setTimeZone((TimeZone.getTimeZone("EST")));
+
+        int[] currDateParts = new int[5];
+        currDateParts[0] = c.get(Calendar.YEAR);
+        currDateParts[1] = c.get(Calendar.MONTH);
+        currDateParts[2] = c.get(Calendar.DAY_OF_MONTH);
+        currDateParts[3] = c.get(Calendar.HOUR_OF_DAY);
+        currDateParts[4] = c.get(Calendar.MINUTE);
+
+        // Compare date parts
+        for (int i = 0; i < lockDateParts.length; i++) {
+            if (currDateParts[i] < Integer.parseInt(lockDateParts[i])) {
+                return false;
+            }
+        }
+
+        setLockDate("");
+        return true;
     }
 
     @Override
@@ -283,10 +339,19 @@ public class SimpleUiActivity extends Activity {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     String entered = passcodeInput.getText().toString();
 
+                    // Verify Passcode
                     if (entered.equals(passcode)) {
-                        passStatusText.setText("Go wild dawhg");
-                        passStatusText.setTextColor(Color.GREEN);
-                        unlockTheBox();
+
+                        // Make sure no date is set
+                        if (lockDatePassed()) {
+                            passStatusText.setTextColor(Color.GREEN);
+                            passStatusText.setText("Go wild dawhg");
+                            unlockTheBox();
+                            modifyDisplayDependingOnDateSet();
+                        } else {
+                            passStatusText.setText("Wait for lock date");
+                            passStatusText.setTextColor(Color.RED);
+                        }
                     } else {
                         passStatusText.setText("Try again");
                         passStatusText.setTextColor(Color.RED);
@@ -322,6 +387,9 @@ public class SimpleUiActivity extends Activity {
 
         // Get passcode from file
         passcode = getPasscode();
+
+        // Check if lockbox is locked until a date and modify UI
+        modifyDisplayDependingOnDateSet();
 
         // Lock the box by default
         lockTheBox();
