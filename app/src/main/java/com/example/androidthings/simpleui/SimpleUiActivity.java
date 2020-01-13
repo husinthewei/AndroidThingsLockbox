@@ -37,6 +37,11 @@ import android.widget.TableRow;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
+import android.widget.DatePicker;
+import android.widget.TimePicker;
+
 import com.google.android.things.pio.PeripheralManager;
 import com.google.android.things.contrib.driver.pwmservo.Servo;
 
@@ -44,8 +49,7 @@ import java.io.IOException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Calendar;
 
 public class SimpleUiActivity extends Activity {
 
@@ -67,6 +71,7 @@ public class SimpleUiActivity extends Activity {
             } catch (IOException e) {
                 Log.e(TAG, "Could not close lock servo", e);
             } finally {
+
                 lockServo = null;
             }
         }
@@ -92,8 +97,6 @@ public class SimpleUiActivity extends Activity {
             }
         }, 750);
     }
-
-
 
     // Move servo to `angle` degrees and enable or disable servo
     private void moveServo(int angle) {
@@ -137,7 +140,7 @@ public class SimpleUiActivity extends Activity {
     // Unlock the box and add lock button
     private void unlockTheBox() {
         initializeServo();
-        moveServo(180 );
+        moveServo(80 );
 
         // Show lock button
         Button lockButton = findViewById(R.id.lockButton);
@@ -195,6 +198,53 @@ public class SimpleUiActivity extends Activity {
         return contents;
     }
 
+    private void datePicker(){
+
+        int currYear;
+        int currMonth;
+        int currDay;
+
+        // Get Current Date
+        final Calendar c = Calendar.getInstance();
+        currYear = c.get(Calendar.YEAR);
+        currMonth = c.get(Calendar.MONTH);
+        currDay = c.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                new DatePickerDialog.OnDateSetListener() {
+
+                    @Override
+                    public void onDateSet(DatePicker view, int year,int monthOfYear, int dayOfMonth) {
+                        String date_time = "";
+                        date_time = dayOfMonth + "-" + (monthOfYear + 1) + "-" + year;
+                        tiemPicker();
+                    }
+                }, currYear, currMonth, currDay);
+        datePickerDialog.show();
+    }
+
+    private void tiemPicker(){
+        // Get Current Time
+        int currHour;
+        int currMinute;
+        final Calendar c = Calendar.getInstance();
+        currHour = c.get(Calendar.HOUR_OF_DAY);
+        currMinute = c.get(Calendar.MINUTE);
+
+        // Launch Time Picker Dialog
+        final TimePickerDialog timePickerDialog = new TimePickerDialog(this,
+                new TimePickerDialog.OnTimeSetListener() {
+
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay,int minute) {
+
+                        int selectHour = hourOfDay;
+                        int selectMinute = minute;
+                    }
+                }, currHour, currMinute, false);
+        timePickerDialog.show();
+    }
+
     // Set the password in the password file
     private void createPasscode(String pass) {
         writeToFile(PASSCODE_FILE, pass);
@@ -249,18 +299,14 @@ public class SimpleUiActivity extends Activity {
             }
         });
 
-        // Action on entered date
-        final EditText dateInput = findViewById(R.id.dateInput);
-        dateInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+        // Set action when date button is pressed
+        final Button dateButton = findViewById(R.id.dateButton);
+        dateButton.setOnClickListener(new View.OnClickListener() {
+
             @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                boolean handled = false;
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    Log.i(TAG, "Entered " + dateInput.getText().toString());
-                    handled = true;
-                    removeFocus(dateInput, v);
-                }
-                return handled;
+            public void onClick(View v) {
+                datePicker();
+
             }
         });
 

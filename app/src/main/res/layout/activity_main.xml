@@ -85,7 +85,7 @@
 
                 <Space
                     android:layout_width="wrap_content"
-                    android:layout_height="120dp" />
+                    android:layout_height="40dp" />
 
             </TableRow>
 
@@ -93,25 +93,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <TextView
-                    android:id="@+id/textView2"
-                    android:layout_width="33dp"
-                    android:layout_height="wrap_content"
-                    android:text="Date Lock"
-                    android:textAppearance="@android:style/TextAppearance.Material.Large" />
-            </TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <EditText
-                    android:id="@+id/dateInput"
+                <Button
+                    android:id="@+id/dateButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:inputType="date"
-                    android:imeOptions="actionDone"/>
+                    android:layout_height="match_parent"
+                    android:text="Set Date Lock" />
             </TableRow>
 
             <TableRow
@@ -120,7 +106,7 @@
 
                 <Space
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:layout_height="40dp" />
             </TableRow>
 
             <TableRow
