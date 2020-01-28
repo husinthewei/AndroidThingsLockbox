@@ -51,6 +51,10 @@ import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.util.Calendar;
 import java.util.TimeZone;
+import java.util.List;
+import java.util.Collections;
+
+import java.net.NetworkInterface;
 
 public class SimpleUiActivity extends Activity {
 
@@ -196,6 +200,19 @@ public class SimpleUiActivity extends Activity {
         return contents;
     }
 
+    // Returns current date formatted in M/D/Y H:M
+    public String getCurrDateFormatted() {
+        final Calendar c = Calendar.getInstance();
+        c.setTimeZone((TimeZone.getTimeZone("EST")));
+        int currYear = c.get(Calendar.YEAR);
+        int currMonth = c.get(Calendar.MONTH) + 1;
+        int currDay = c.get(Calendar.DAY_OF_MONTH);
+        int currHour = c.get(Calendar.HOUR_OF_DAY);
+        int currMinute = c.get(Calendar.MINUTE);
+
+        return "" + currMonth + "/" + currDay +  "/" + currYear + " " + currHour + ":" + currMinute;
+    }
+
     // Open a dialog for a date picker, which goes to timePicker on pick
     private void datePicker(){
         int currYear;
@@ -312,13 +329,43 @@ public class SimpleUiActivity extends Activity {
 
         // Compare date parts
         for (int i = 0; i < lockDateParts.length; i++) {
-            if (currDateParts[i] < Integer.parseInt(lockDateParts[i])) {
+            if ((currDateParts[i] > Integer.parseInt((lockDateParts[i])))) {
+                setLockDate("");
+                return true;
+            } else if (currDateParts[i] < Integer.parseInt(lockDateParts[i])) {
                 return false;
             }
         }
 
         setLockDate("");
         return true;
+    }
+
+    public String getMacAddr() {
+        try {
+            List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface nif : all) {
+                if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
+
+                byte[] macBytes = nif.getHardwareAddress();
+                if (macBytes == null) {
+                    return "";
+                }
+
+                StringBuilder res1 = new StringBuilder();
+                for (byte b : macBytes) {
+                    //res1.append(Integer.toHexString(b & 0xFF) + ":");
+                    res1.append(String.format("%02X:",b));
+                }
+
+                if (res1.length() > 0) {
+                    res1.deleteCharAt(res1.length() - 1);
+                }
+                return res1.toString();
+            }
+        } catch (Exception ex) {
+        }
+        return "";
     }
 
     @Override
@@ -349,7 +396,8 @@ public class SimpleUiActivity extends Activity {
                             unlockTheBox();
                             modifyDisplayDependingOnDateSet();
                         } else {
-                            passStatusText.setText("Wait for lock date");
+                            String stat = "Wait for lock date. Currently: " + getCurrDateFormatted();
+                            passStatusText.setText(stat);
                             passStatusText.setTextColor(Color.RED);
                         }
                     } else {
@@ -393,6 +441,7 @@ public class SimpleUiActivity extends Activity {
 
         // Lock the box by default
         lockTheBox();
+        Log.i(TAG, "MAC: " + getMacAddr());
     }
 
     @Override
