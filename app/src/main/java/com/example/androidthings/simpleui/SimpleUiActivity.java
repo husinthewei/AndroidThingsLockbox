@@ -203,7 +203,8 @@ public class SimpleUiActivity extends Activity {
     // Returns current date formatted in M/D/Y H:M
     public String getCurrDateFormatted() {
         final Calendar c = Calendar.getInstance();
-        c.setTimeZone((TimeZone.getTimeZone("EST")));
+        TimeZone zone = TimeZone.getTimeZone("America/New_York");
+        c.setTimeZone(zone);
         int currYear = c.get(Calendar.YEAR);
         int currMonth = c.get(Calendar.MONTH) + 1;
         int currDay = c.get(Calendar.DAY_OF_MONTH);
@@ -221,7 +222,8 @@ public class SimpleUiActivity extends Activity {
 
         // Get Current Date
         final Calendar c = Calendar.getInstance();
-        c.setTimeZone((TimeZone.getTimeZone("EST")));
+        TimeZone zone = TimeZone.getTimeZone("America/New_York");
+        c.setTimeZone(zone);
         currYear = c.get(Calendar.YEAR);
         currMonth = c.get(Calendar.MONTH);
         currDay = c.get(Calendar.DAY_OF_MONTH);
@@ -243,7 +245,8 @@ public class SimpleUiActivity extends Activity {
         int currHour;
         int currMinute;
         final Calendar c = Calendar.getInstance();
-        c.setTimeZone((TimeZone.getTimeZone("EST")));
+        TimeZone zone = TimeZone.getTimeZone("America/New_York");
+        c.setTimeZone(zone);
         currHour = c.get(Calendar.HOUR_OF_DAY);
         currMinute = c.get(Calendar.MINUTE);
 
@@ -318,7 +321,8 @@ public class SimpleUiActivity extends Activity {
 
         // Store current date in array for comparison
         final Calendar c = Calendar.getInstance();
-        c.setTimeZone((TimeZone.getTimeZone("EST")));
+        TimeZone zone = TimeZone.getTimeZone("America/New_York");
+        c.setTimeZone(zone);
 
         int[] currDateParts = new int[5];
         currDateParts[0] = c.get(Calendar.YEAR);
